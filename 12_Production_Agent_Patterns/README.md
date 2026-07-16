@@ -65,7 +65,7 @@ In `01_Cat_Health_Agent_Guardrails.ipynb`, input rails run in a specific order: 
 
 #### ✅ Answer
 
-Deterministic checks run first because they're cheap, instant, and reliable, so emergencies escalate, injections get blocked, and PII gets redacted before we ever pay for (or expose the attack to) the topical LLM. The rich decisions matter because "don't answer normally" is really several different cases — `escalate` points to a vet, `block` refuses an attack, `rewrite` sanitizes PII and continues, `allow` proceeds — and a boolean can't express "let it through, but changed." They also carry `rail`/`reason`/`message`, giving an auditable trail and the right response per case.
+Deterministic checks run first because they're cheap, instant, and reliable, so emergencies escalate, injections get blocked, and PII gets redacted before we ever pay for (or expose the attack to) the topical LLM. The rich decisions matter because "don't answer normally" is really several different cases — `escalate` points to a vet, `block` refuses an attack, `rewrite` sanitizes PII and continues, `allow` proceeds — and a boolean can't express "let it through, but changed." They also carry `rail`/`reason`/`message`, giving an auditable trail and the right response per case. This same boundary matters in `a2a/`: these rails should run on both what you send to a remote agent and what comes back, since the specialist across the protocol is opaque and its disclaimers are only a contract, not a guarantee.
 
 ### ❓ Question #2
 
@@ -73,7 +73,7 @@ In `02_Cat_Health_Agent_Caching.ipynb`, a semantic cache can serve a paraphrased
 
 #### ✅ Answer
 
-Embeddings measure how alike two sentences *look*, not how much their difference *matters*, so `"…ate chocolate…"` and `"…ate chicken…"` scored **0.743** even though one is a poisoning emergency. No threshold fixes this: low enough to catch real paraphrases also lets that dangerous pair through, and high enough to exclude it makes legitimate paraphrases miss — some critically-different pair always sits just above any cutoff. Instead, gate the cache with Notebook 1's rails: high-stakes queries (`escalate`) bypass the cache entirely and hit the live model. Reserve semantic caching for low-stakes FAQ, and add TTL expiry, eviction, and per-user scoping.
+Embeddings measure how alike two sentences *look*, not how much their difference *matters*, so `"…ate chocolate…"` and `"…ate chicken…"` scored **0.743** even though one is a poisoning emergency. No threshold fixes this: low enough to catch real paraphrases also lets that dangerous pair through, and high enough to exclude it makes legitimate paraphrases miss — some critically-different pair always sits just above any cutoff. Instead, gate the cache with Notebook 1's rails: high-stakes queries (`escalate`) bypass the cache entirely and hit the live model. Reserve semantic caching for low-stakes FAQ, and add TTL expiry, eviction, and per-user scoping. The risk compounds in `a2a/`: a cache in front of `send_message` inherits all of these hazards plus a new one — the remote agent can change its behavior behind an unchanged card version, so a stale cached answer may no longer reflect what the specialist would say today.
 
 ## Submitting Your Homework
 
