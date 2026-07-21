@@ -378,7 +378,7 @@
         <div id="chatThread"></div>
         <div class="logbar">
           <input id="logInput" placeholder="say what happened…" autocomplete="off">
-          <input id="photoInput" type="file" accept="image/*" style="display:none">
+          <input id="photoInput" type="file" accept="image/*" multiple style="display:none">
           <button class="iconbtn cam" id="photoBtn" aria-label="Log from a photo">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>
           </button>
@@ -718,7 +718,7 @@
     }, 800);
   }
   // Photo logging: pick/take a screenshot → downscale → Claude vision reads it.
-  function resizeImage(file, maxDim, quality, cb) {
+  function resizeImage(file, maxDim, quality, cb, fail) {
     var img = new Image(), url = URL.createObjectURL(file);
     img.onload = function () {
       var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
@@ -726,13 +726,14 @@
       var c = document.createElement("canvas"); c.width = cw; c.height = ch;
       c.getContext("2d").drawImage(img, 0, 0, cw, ch);
       URL.revokeObjectURL(url);
-      try { cb(c.toDataURL("image/jpeg", quality)); } catch (e) { toast("Couldn't read that image"); }
+      try { cb(c.toDataURL("image/jpeg", quality)); } catch (e) { toast("Couldn't read that image"); if (fail) fail(); }
     };
-    img.onerror = function () { URL.revokeObjectURL(url); toast("Couldn't open that image"); };
+    img.onerror = function () { URL.revokeObjectURL(url); toast("Couldn't open that image"); if (fail) fail(); };
     img.src = url;
   }
-  function handlePhoto(file) {
-    if (!/^image\//.test(file.type)) { toast("That's not an image"); return; }
+  function handlePhoto(file, done) {
+    done = done || function () {};
+    if (!/^image\//.test(file.type)) { toast("That's not an image"); done(); return; }
     pushChat({ role: "you", text: "📷 Photo" });
     toast("Reading photo…");
     resizeImage(file, 1400, 0.85, function (dataUrl) {
@@ -743,17 +744,24 @@
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (res) {
           if (res && res.configured && res.data && res.data.items) { applyItems("[photo]", res.data, res.image_url); chatReply(res.data); }
-          else if (res && res.image_url) { applyItems("[photo]", { items: [], mood: null, habits_done: [] }, res.image_url); pushChat({ role: "bot", text: "Saved your photo. Reading the numbers off it needs the AI key — that turns on once deployed." }); }
+          else if (res && res.image_url) { applyItems("[photo]", { items: [], mood: null, habits_done: [] }, res.image_url); pushChat({ role: "bot", text: "Saved your photo. To read the numbers off it, set your Anthropic key on the server (restart with ANTHROPIC_API_KEY)." }); }
           else { pushChat({ role: "bot", text: "Hmm, I couldn't read that one — try a clearer shot." }); }
         })
-        .catch(function () { pushChat({ role: "bot", text: "Upload failed — check your signal." }); });
-    });
+        .catch(function () { pushChat({ role: "bot", text: "Upload failed — check your signal." }); })
+        .then(function () { done(); });
+    }, done);
   }
 
   $("#sendBtn").addEventListener("click", submitLog);
   $("#logInput").addEventListener("keydown", function (e) { if (e.key === "Enter") submitLog(); });
   $("#photoBtn").addEventListener("click", function () { $("#photoInput").click(); });
-  $("#photoInput").addEventListener("change", function () { if (this.files && this.files[0]) handlePhoto(this.files[0]); this.value = ""; });
+  $("#photoInput").addEventListener("change", function () {
+    var files = this.files ? Array.prototype.slice.call(this.files) : [];
+    if (files.length > 1) toast("Reading " + files.length + " photos…");
+    // Process sequentially so we don't fire a dozen uploads at once.
+    (function next(i) { if (i >= files.length) return; handlePhoto(files[i], function () { next(i + 1); }); })(0);
+    this.value = "";
+  });
   $("#clearBtn").addEventListener("click", function () {
     if (!window.confirm("Clear the sample data and start fresh with your own? This can't be undone.")) return;
     S = { theme: S.theme || null, logs: [], chat: [], plans: [], weeklyPlans: [], today: {}, habits: clone(STARTER_HABITS), goals: clone(STARTER_GOALS), healthLogs: [] };
