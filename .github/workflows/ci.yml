@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  daybloom:
+    name: Daybloom checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: planner
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Syntax-check every backend module
+        run: |
+          for f in backend/server.js backend/lib/*.js backend/test.js; do
+            node --check "$f"
+            echo "OK  $f"
+          done
+
+      - name: Syntax-check the frontend inline script
+        run: |
+          node -e '
+            const fs = require("fs");
+            const html = fs.readFileSync("frontend/index.html", "utf8");
+            const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+            if (!scripts.length) { console.error("no inline <script> found"); process.exit(1); }
+            scripts.forEach((m, i) => {
+              new (require("vm").Script)(m[1], { filename: "index.html <script #" + i + ">" });
+              console.log("OK  frontend/index.html <script #" + i + ">");
+            });
+          '
+
+      - name: Validate PWA manifest
+        run: node -e 'const m=JSON.parse(require("fs").readFileSync("frontend/manifest.webmanifest","utf8")); if(!m.name||!m.icons.length) process.exit(1); console.log("OK  manifest:", m.name, m.icons.length, "icons")'
+
+      - name: Run end-to-end API tests
+        run: npm test
+        working-directory: planner/backend

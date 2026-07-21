@@ -1,0 +1,14 @@
+{
+  "name": "daybloom",
+  "version": "0.1.0",
+  "description": "Daybloom — a personal planner, habit, health and journal app with Claude-powered logging.",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

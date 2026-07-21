@@ -1,0 +1,1349 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daybloom</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2F7A62">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Daybloom">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/icon-192.png">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("/sw.js").catch(function () {}); });
+  }
+</script>
+<style>
+  :root {
+    --paper: #FBF8F2;
+    --card: #FFFFFF;
+    --card-sunk: #F5F1E8;
+    --ink: #2B2E2C;
+    --ink-soft: #6E726B;
+    --line: #ECE6DA;
+    --brand: #2F7A62;
+    --brand-ink: #1F5946;
+    --brand-soft: #E3EEE8;
+    --coral: #EF7E57;
+    --coral-soft: #FBE6DC;
+    --indigo: #5B6CB0;
+    --indigo-soft: #E4E7F4;
+    --gold: #E5A72C;
+    --gold-soft: #F8EBCE;
+    --plum: #8A5A83;
+    --plum-soft: #F0E4EE;
+    --shadow: 0 1px 2px rgba(43,46,44,.05), 0 8px 24px rgba(43,46,44,.06);
+    --radius: 20px;
+    --font-round: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif;
+    --font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #171917; --card: #23262300; --card: #232623; --card-sunk: #1D201E;
+      --ink: #ECEAE3; --ink-soft: #9DA29A; --line: #32362F;
+      --brand: #5CB394; --brand-ink: #8FD4B9; --brand-soft: #21322B;
+      --coral: #F2916E; --coral-soft: #3A2A23;
+      --indigo: #8C99D6; --indigo-soft: #262A3A;
+      --gold: #E6B856; --gold-soft: #35301E;
+      --plum: #C08FB8; --plum-soft: #33253180; --plum-soft: #322530;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #FBF8F2; --card: #FFFFFF; --card-sunk: #F5F1E8;
+    --ink: #2B2E2C; --ink-soft: #6E726B; --line: #ECE6DA;
+    --brand: #2F7A62; --brand-ink: #1F5946; --brand-soft: #E3EEE8;
+    --coral: #EF7E57; --coral-soft: #FBE6DC;
+    --indigo: #5B6CB0; --indigo-soft: #E4E7F4;
+    --gold: #E5A72C; --gold-soft: #F8EBCE;
+    --plum: #8A5A83; --plum-soft: #F0E4EE;
+    --shadow: 0 1px 2px rgba(43,46,44,.05), 0 8px 24px rgba(43,46,44,.06);
+  }
+  :root[data-theme="dark"] {
+    --paper: #171917; --card: #232623; --card-sunk: #1D201E;
+    --ink: #ECEAE3; --ink-soft: #9DA29A; --line: #32362F;
+    --brand: #5CB394; --brand-ink: #8FD4B9; --brand-soft: #21322B;
+    --coral: #F2916E; --coral-soft: #3A2A23;
+    --indigo: #8C99D6; --indigo-soft: #262A3A;
+    --gold: #E6B856; --gold-soft: #35301E;
+    --plum: #C08FB8; --plum-soft: #322530;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+  @media (min-width: 500px) {
+    body { background: repeating-linear-gradient(0deg, transparent, transparent 26px, rgba(120,120,110,.05) 27px), var(--paper); }
+  }
+
+  /* Phone shell */
+  .app {
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--paper);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  @media (min-width: 500px) {
+    .app {
+      margin: 24px auto;
+      min-height: 0;
+      height: calc(100dvh - 48px);
+      border-radius: 40px;
+      box-shadow: 0 30px 80px rgba(43,46,44,.22), 0 0 0 10px #1c1e1d, 0 0 0 11px rgba(255,255,255,.06);
+      overflow: hidden;
+    }
+  }
+
+  /* Header */
+  header {
+    padding: 22px 22px 12px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .greet { font-family: var(--font-round); }
+  .greet .hello { font-size: 25px; font-weight: 800; letter-spacing: -.01em; }
+  .greet .date { color: var(--ink-soft); font-size: 13.5px; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: .06em; }
+  .themebtn {
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center;
+    cursor: pointer; flex: 0 0 auto; box-shadow: var(--shadow);
+  }
+  .themebtn:active { transform: scale(.94); }
+
+  /* Scroll area */
+  .scroll { flex: 1; overflow-y: auto; padding: 0 18px 108px; -webkit-overflow-scrolling: touch; }
+  .tab { display: none; }
+  .tab.on { display: block; animation: fade .28s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .tab.on { animation: none; } }
+
+  .card {
+    background: var(--card); border-radius: var(--radius); padding: 16px;
+    box-shadow: var(--shadow); margin-bottom: 14px; border: 1px solid var(--line);
+  }
+  .card h2 { margin: 0 0 12px; font-family: var(--font-round); font-size: 15px; font-weight: 800; letter-spacing: -.01em; display: flex; align-items: center; gap: 8px; }
+  .card h2 .sub { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--ink-soft); letter-spacing: 0; }
+
+  /* Insight banner */
+  .insight {
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-ink) 100%);
+    color: #fff; border: none;
+  }
+  .insight .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
+  .insight p { margin: 6px 0 0; font-size: 16px; line-height: 1.4; font-weight: 500; }
+  .insight b { font-weight: 800; }
+  .weekdots { display: flex; gap: 6px; margin-top: 14px; }
+  .weekdots .d { flex: 1; text-align: center; }
+  .weekdots .lbl { font-size: 10px; font-weight: 700; opacity: .7; letter-spacing: .04em; }
+  .weekdots .pip { height: 26px; border-radius: 9px; margin-top: 5px; background: rgba(255,255,255,.18); display: grid; place-items: center; font-size: 12px; font-weight: 800; }
+  .weekdots .pip.full { background: rgba(255,255,255,.92); color: var(--brand-ink); }
+  .weekdots .pip.part { background: rgba(255,255,255,.42); }
+  .weekdots .today .lbl { opacity: 1; }
+  .weekdots .today .pip { box-shadow: 0 0 0 2px rgba(255,255,255,.9); }
+
+  /* Quick log buttons */
+  .qgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .qbtn {
+    border: 1px solid var(--line); background: var(--card-sunk); border-radius: 16px;
+    padding: 11px 4px 9px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    cursor: pointer; color: var(--ink); font-family: var(--font-round); transition: transform .1s;
+  }
+  .qbtn:active { transform: scale(.93); }
+  .qbtn .ic { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; }
+  .qbtn .nm { font-size: 11px; font-weight: 700; }
+  .qbtn .vl { font-size: 10.5px; font-weight: 700; color: var(--ink-soft); min-height: 13px; }
+  .ic svg { width: 19px; height: 19px; }
+  .c-sleep { background: var(--indigo-soft); color: var(--indigo); }
+  .c-water { background: var(--brand-soft); color: var(--brand); }
+  .c-move  { background: var(--coral-soft); color: var(--coral); }
+  .c-mood  { background: var(--gold-soft); color: var(--gold); }
+  .c-food  { background: var(--plum-soft); color: var(--plum); }
+  .qbtn.logged .vl { color: var(--brand); }
+
+  /* Log bar */
+  .logbar { display: flex; align-items: center; gap: 8px; background: var(--card-sunk); border: 1px solid var(--line); border-radius: 16px; padding: 6px 6px 6px 14px; margin-top: 12px; }
+  .logbar input { flex: 1; border: none; background: transparent; color: var(--ink); font-size: 15px; font-family: var(--font-body); outline: none; min-width: 0; }
+  .logbar input::placeholder { color: var(--ink-soft); }
+  .iconbtn { border: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; cursor: pointer; flex: 0 0 auto; }
+  .iconbtn:active { transform: scale(.92); }
+  .mic { background: var(--coral); color: #fff; }
+  .cam { background: var(--indigo); color: #fff; }
+  .mic.live { animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,126,87,.5); } 50% { box-shadow: 0 0 0 8px rgba(239,126,87,0); } }
+  .send { background: var(--brand); color: #fff; }
+  .hint { font-size: 11.5px; color: var(--ink-soft); margin: 8px 2px 0; }
+
+  /* Timeline */
+  .tl { list-style: none; margin: 0; padding: 0; }
+  .tl li { display: flex; gap: 11px; padding: 9px 0; border-top: 1px solid var(--line); align-items: flex-start; }
+  .tl li:first-child { border-top: none; }
+  .tl .dot { width: 30px; height: 30px; border-radius: 10px; flex: 0 0 auto; display: grid; place-items: center; }
+  .tl .dot svg { width: 16px; height: 16px; }
+  .tl .txt { flex: 1; font-size: 14.5px; padding-top: 4px; }
+  .tl .txt .t { color: var(--ink-soft); font-size: 12px; font-weight: 600; margin-left: 6px; }
+  .empty { text-align: center; color: var(--ink-soft); font-size: 14px; padding: 18px 0 6px; }
+
+  /* Habits */
+  .habit { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line); }
+  .habit:first-child { border-top: none; }
+  .check { width: 28px; height: 28px; border-radius: 9px; border: 2px solid var(--line); flex: 0 0 auto; cursor: pointer; display: grid; place-items: center; background: var(--card); color: transparent; transition: .15s; }
+  .check:active { transform: scale(.9); }
+  .habit.done .check { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .habit .nm { flex: 1; font-weight: 600; font-size: 15px; }
+  .habit.done .nm { color: var(--ink-soft); text-decoration: line-through; }
+  .streak { font-size: 12px; font-weight: 800; color: var(--gold); background: var(--gold-soft); padding: 3px 9px; border-radius: 20px; font-family: var(--font-round); white-space: nowrap; }
+
+  /* Goals */
+  .goal { padding: 13px 0; border-top: 1px solid var(--line); }
+  .goal:first-child { border-top: none; }
+  .goal .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .goal .nm { font-weight: 700; font-size: 15px; font-family: var(--font-round); }
+  .goal .pct { font-size: 13px; font-weight: 800; color: var(--brand); font-variant-numeric: tabular-nums; }
+  .bar { height: 9px; background: var(--card-sunk); border-radius: 20px; overflow: hidden; margin-top: 8px; }
+  .bar > span { display: block; height: 100%; border-radius: 20px; background: linear-gradient(90deg, var(--brand), var(--brand-ink)); }
+  .goal .meta { font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+
+  /* Review: Day / Week / Month */
+  .seg { display: flex; gap: 4px; background: var(--card-sunk); border: 1px solid var(--line); border-radius: 14px; padding: 4px; margin-bottom: 14px; }
+  .seg button { flex: 1; border: none; background: transparent; color: var(--ink-soft); font-family: var(--font-round); font-weight: 800; font-size: 14px; padding: 9px; border-radius: 10px; cursor: pointer; }
+  .seg button.on { background: var(--card); color: var(--brand); box-shadow: var(--shadow); }
+  .daysum { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .daysum .pill { background: var(--card-sunk); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+  .daysum .pill b { font-family: var(--font-round); color: var(--ink); font-weight: 800; }
+  .wk { display: flex; flex-direction: column; gap: 8px; }
+  .wk .row { display: flex; align-items: center; gap: 11px; padding: 12px; background: var(--card-sunk); border: 1px solid var(--line); border-radius: 14px; cursor: pointer; }
+  .wk .row.today { border-color: var(--brand); }
+  .wk .wd { width: 40px; flex: 0 0 auto; text-align: center; }
+  .wk .wd .d1 { font-size: 10.5px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; }
+  .wk .wd .d2 { font-size: 18px; font-weight: 800; font-family: var(--font-round); }
+  .wk .met { flex: 1; font-size: 13px; color: var(--ink-soft); }
+  .wk .met b { color: var(--ink); font-family: var(--font-round); }
+  .wk .cnt { font-size: 12px; font-weight: 800; color: var(--brand); background: var(--brand-soft); border-radius: 20px; padding: 3px 10px; font-family: var(--font-round); white-space: nowrap; }
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .cal .head { font-size: 10px; font-weight: 700; color: var(--ink-soft); text-align: center; padding-bottom: 2px; }
+  .cal .cell { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; background: var(--card-sunk); border: 1px solid var(--line); cursor: pointer; }
+  .cal .cell.empty { background: transparent; border: none; cursor: default; }
+  .cal .cell.today { border-color: var(--brand); color: var(--brand); }
+  .cal .cell .cdot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); margin-top: 3px; }
+  .clearlink { display: block; width: 100%; text-align: center; background: none; border: none; color: var(--ink-soft); font-size: 12.5px; padding: 14px; cursor: pointer; text-decoration: underline; }
+  .trend { margin-top: 14px; }
+  .trend:first-of-type { margin-top: 2px; }
+  .trendhd { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; font-weight: 700; font-family: var(--font-round); margin-bottom: 5px; }
+  .trendhd .tval { color: var(--brand); font-variant-numeric: tabular-nums; }
+  .trend svg { border-bottom: 1px solid var(--line); }
+  .revbtn { border: none; background: var(--brand-soft); color: var(--brand-ink); font-family: var(--font-round); font-weight: 800; font-size: 14px; padding: 13px; border-radius: 12px; cursor: pointer; width: 100%; }
+  .revbtn:active { transform: scale(.98); }
+  .reviewp { margin: 0; font-size: 15px; line-height: 1.5; }
+  /* Editing controls */
+  .editbtn { margin-left: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink-soft); font-family: var(--font-round); font-weight: 700; font-size: 11.5px; padding: 3px 10px; border-radius: 20px; cursor: pointer; }
+  .editbtn.on { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .addrow { width: 100%; border: 1px dashed var(--line); background: transparent; color: var(--brand); font-family: var(--font-round); font-weight: 700; font-size: 13.5px; padding: 11px; border-radius: 12px; cursor: pointer; margin-top: 10px; }
+  .hdel { border: none; background: var(--coral-soft); color: var(--coral); width: 26px; height: 26px; border-radius: 8px; font-size: 13px; cursor: pointer; flex: 0 0 auto; }
+  .habit .nm.hedit, .goal .nm.hedit { cursor: pointer; border-bottom: 1px dashed var(--line); }
+  .goal .pct { cursor: pointer; }
+  /* Plan section */
+  .planrow { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+  .planrow:first-child { border-top: none; }
+  .planrow .ptime { width: 44px; flex: 0 0 auto; font-size: 12px; font-weight: 700; color: var(--brand); font-variant-numeric: tabular-nums; }
+  .planrow .ptext { flex: 1; font-size: 14.5px; }
+  .planned { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--ink-soft); border: 1px dashed var(--line); border-radius: 10px; padding: 3px 9px; margin: 2px 0; }
+  /* Health dashboard (Apple-Health style) */
+  .hgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .hcard { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 5px; }
+  .hcard.wide { grid-column: 1 / -1; }
+  .hcard .hc-top { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; font-family: var(--font-round); }
+  .hcard .hc-ic { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; flex: 0 0 auto; }
+  .hcard .hc-ic svg { width: 15px; height: 15px; }
+  .hcard .hc-val { font-size: 25px; font-weight: 800; font-family: var(--font-round); letter-spacing: -.01em; }
+  .hcard .hc-val .u { font-size: 13px; font-weight: 700; color: var(--ink-soft); margin-left: 3px; }
+  .hcard .hc-val .hc-empty { color: var(--ink-soft); }
+  .hcard .hc-sub { font-size: 12px; color: var(--ink-soft); }
+  .macro { display: flex; gap: 10px; margin-top: 4px; }
+  .macro .m { flex: 1; }
+  .macro .ml { font-size: 11px; font-weight: 700; color: var(--ink-soft); font-family: var(--font-round); }
+  .macro .mbar { height: 6px; border-radius: 20px; background: var(--card-sunk); overflow: hidden; margin-top: 4px; }
+  .macro .mbar > span { display: block; height: 100%; border-radius: 20px; }
+  /* Chat thread */
+  .chat { display: flex; flex-direction: column; gap: 8px; }
+  .bub { max-width: 82%; padding: 9px 13px; border-radius: 16px; font-size: 14.5px; line-height: 1.4; }
+  .bub.you { align-self: flex-end; background: var(--brand); color: #fff; border-bottom-right-radius: 5px; }
+  .bub.bot { align-self: flex-start; background: var(--card-sunk); border: 1px solid var(--line); border-bottom-left-radius: 5px; }
+  .bub.bot .filed { display: block; margin-top: 4px; font-size: 12.5px; color: var(--ink-soft); }
+  .chat .thinking { align-self: flex-start; color: var(--ink-soft); font-size: 13px; padding: 4px 6px; }
+  /* Hourly day agenda */
+  .agenda { margin-top: 6px; }
+  .hrow { display: flex; gap: 10px; align-items: flex-start; min-height: 34px; border-top: 1px solid var(--line); padding: 4px 0; }
+  .hrow:first-child { border-top: none; }
+  .hlabel { width: 46px; flex: 0 0 auto; font-size: 11px; font-weight: 700; color: var(--ink-soft); padding-top: 6px; text-align: right; font-variant-numeric: tabular-nums; }
+  .hbody { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .hrow.now { position: relative; background: var(--coral-soft); border-radius: 8px; }
+  .hrow.now .hlabel { color: var(--coral); font-weight: 800; }
+  .hrow.now::before { content: "now"; position: absolute; left: 46px; top: 0; font-size: 9px; font-weight: 800; color: var(--coral); letter-spacing: .05em; text-transform: uppercase; }
+  .hrow.now .hlabel::after { content: ""; }
+  .hentry .tl { }
+  .monthnav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .monthnav button { border: 1px solid var(--line); background: var(--card); color: var(--ink); width: 34px; height: 34px; border-radius: 11px; font-size: 17px; cursor: pointer; display: grid; place-items: center; }
+  .monthnav .mlabel { font-family: var(--font-round); font-weight: 800; font-size: 16px; }
+
+  /* Plan / week (legacy, unused) */
+  .weekstrip { display: flex; gap: 6px; margin-bottom: 4px; }
+  .weekstrip button { flex: 1; border: 1px solid var(--line); background: var(--card); border-radius: 14px; padding: 8px 2px; cursor: pointer; font-family: var(--font-round); color: var(--ink); }
+  .weekstrip button .wd { font-size: 10.5px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .04em; }
+  .weekstrip button .dn { font-size: 17px; font-weight: 800; margin-top: 2px; }
+  .weekstrip button.sel { background: var(--brand); border-color: var(--brand); }
+  .weekstrip button.sel .wd, .weekstrip button.sel .dn { color: #fff; }
+  .slot { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .slot:first-child { border-top: none; }
+  .slot .hr { font-size: 12px; font-weight: 700; color: var(--ink-soft); width: 52px; flex: 0 0 auto; padding-top: 2px; font-variant-numeric: tabular-nums; }
+  .slot .ev { flex: 1; }
+  .chip { display: inline-block; padding: 8px 12px; border-radius: 12px; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .chip.g { background: var(--brand-soft); color: var(--brand-ink); }
+  .chip.c { background: var(--coral-soft); color: var(--coral); }
+  .chip.i { background: var(--indigo-soft); color: var(--indigo); }
+  .chip.free { background: transparent; color: var(--ink-soft); font-weight: 500; border: 1px dashed var(--line); }
+
+  /* Journal */
+  .compose textarea { width: 100%; border: 1px solid var(--line); background: var(--card-sunk); border-radius: 14px; padding: 12px; font-family: var(--font-body); font-size: 15px; color: var(--ink); resize: none; outline: none; }
+  .compose textarea:focus { border-color: var(--brand); }
+  .compose .row { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+  .compose .mood-pick { display: flex; gap: 4px; }
+  .compose .mood-pick button { border: 1px solid var(--line); background: var(--card); font-size: 19px; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; line-height: 1; }
+  .compose .mood-pick button.sel { border-color: var(--brand); background: var(--brand-soft); transform: scale(1.06); }
+  .savebtn { margin-left: auto; border: none; background: var(--brand); color: #fff; font-weight: 700; font-family: var(--font-round); padding: 10px 18px; border-radius: 12px; cursor: pointer; }
+  .savebtn:active { transform: scale(.96); }
+  .entry { padding: 13px 0; border-top: 1px solid var(--line); }
+  .entry:first-child { border-top: none; }
+  .entry .eh { display: flex; align-items: center; gap: 8px; }
+  .entry .em { font-size: 20px; }
+  .entry .ed { font-size: 12px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .05em; }
+  .entry p { margin: 6px 0 0; font-size: 14.5px; }
+
+  /* Bottom nav */
+  nav {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    display: flex; padding: 10px 14px calc(14px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--paper) 82%, transparent);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line);
+  }
+  nav button { flex: 1; border: none; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--ink-soft); font-family: var(--font-round); font-weight: 700; font-size: 10.5px; padding: 4px 0; }
+  nav button svg { width: 23px; height: 23px; }
+  nav button.on { color: var(--brand); }
+  .toast { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--paper); padding: 10px 18px; border-radius: 14px; font-size: 13.5px; font-weight: 600; opacity: 0; pointer-events: none; transition: .25s; z-index: 20; box-shadow: var(--shadow); white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+
+<div class="app">
+  <header>
+    <div class="greet">
+      <div class="hello" id="hello">Good evening, Aneeta</div>
+      <div class="date" id="date">Thursday · July 16</div>
+    </div>
+    <button class="themebtn" id="theme" aria-label="Toggle light and dark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </header>
+
+  <div class="scroll">
+    <!-- ============ TODAY ============ -->
+    <section class="tab on" id="tab-today">
+      <div class="card insight">
+        <div class="eyebrow">This week</div>
+        <p id="insightText">Log a couple of days and I'll start spotting patterns for you.</p>
+        <div class="weekdots" id="weekdots"></div>
+      </div>
+
+      <div class="card">
+        <h2>Quick log <span class="sub">tap to add</span></h2>
+        <div class="qgrid" id="qgrid"></div>
+        <div class="hint">Tap a tile above — or use the chat below to say (or 📷) anything in your own words.</div>
+      </div>
+
+      <div class="card">
+        <h2>Chat</h2>
+        <div id="chatThread"></div>
+        <div class="logbar">
+          <input id="logInput" placeholder="say what happened…" autocomplete="off">
+          <input id="photoInput" type="file" accept="image/*" style="display:none">
+          <button class="iconbtn cam" id="photoBtn" aria-label="Log from a photo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/></svg>
+          </button>
+          <button class="iconbtn mic" id="micBtn" aria-label="Voice log">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10a7 7 0 0 1-14 0M12 19v3"/></svg>
+          </button>
+          <button class="iconbtn send" id="sendBtn" aria-label="Save log">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
+        <div class="hint" id="micHint">Type, tap 🎤 to talk (words stream in as you speak), or 📷 a screenshot. On iPhone the keyboard mic also works.</div>
+      </div>
+
+      <div class="card">
+        <h2>Today's habits <span class="sub" id="habitCount"></span><button class="editbtn" id="habitEdit">Edit</button></h2>
+        <div id="habitList"></div>
+      </div>
+      <button class="clearlink" id="clearBtn">Clear sample data &amp; start fresh</button>
+    </section>
+
+    <!-- ============ SLEEP ============ -->
+    <section class="tab" id="tab-sleep">
+      <div id="sleepBody"></div>
+    </section>
+
+    <!-- ============ NUTRITION ============ -->
+    <section class="tab" id="tab-nutrition">
+      <div id="nutritionBody"></div>
+    </section>
+
+    <!-- ============ PLAN (Day / Week / Month, drafted + analyzed) ============ -->
+    <section class="tab" id="tab-plan">
+      <div class="seg" id="reviewSeg">
+        <button data-view="day" class="on">Day</button>
+        <button data-view="week">Week</button>
+        <button data-view="month">Month</button>
+      </div>
+      <div id="reviewBody"></div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <nav id="nav">
+    <button class="on" data-tab="today">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      Today
+    </button>
+    <button data-tab="sleep">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      Sleep
+    </button>
+    <button data-tab="nutrition">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v7a3 3 0 0 0 6 0V2M9 2v20M17 2c-1.5 1-2 3-2 6s.5 5 2 6v8"/></svg>
+      Nutrition
+    </button>
+    <button data-tab="plan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+      Plan
+    </button>
+  </nav>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+
+  // ---- icons ----
+  var ICON = {
+    sleep: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
+    water: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>',
+    move: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5 4 9l2.5 2.5M17.5 17.5 20 15l-2.5-2.5M14.5 6.5 17 9l-2.5 2.5M9.5 17.5 7 15l2.5-2.5"/><path d="M9 9l6 6"/></svg>',
+    mood: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg>',
+    food: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v7a3 3 0 0 0 6 0V2M9 2v20M17 2c-1.5 1-2 3-2 6s.5 5 2 6v8"/></svg>',
+    meds: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="4"/><path d="M12 8v8"/></svg>',
+    screen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+    work: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+    task: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>',
+    note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+    weight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7h11l2.4 11.8a1 1 0 0 1-1 1.2H5.1a1 1 0 0 1-1-1.2z"/><circle cx="12" cy="5" r="2.4"/></svg>',
+    metric: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 4-6"/></svg>'
+  };
+  // How each kind renders in the timeline (reuses existing colour classes — no new CSS).
+  var KINDMETA = {
+    sleep: { cls: "c-sleep", ic: "sleep" }, water: { cls: "c-water", ic: "water" },
+    move: { cls: "c-move", ic: "move" }, food: { cls: "c-food", ic: "food" },
+    mood: { cls: "c-mood", ic: "mood" }, meds: { cls: "c-food", ic: "meds" },
+    screen: { cls: "c-sleep", ic: "screen" }, work: { cls: "c-move", ic: "work" },
+    task: { cls: "c-water", ic: "task" }, note: { cls: "c-mood", ic: "note" },
+    weight: { cls: "c-move", ic: "weight" }, metric: { cls: "c-sleep", ic: "metric" }
+  };
+  function kindToCat(kind) {
+    return ({ sleep: "sleep", water: "water", exercise: "move", food: "food", mood: "mood",
+      weight: "weight", meds: "meds", screen_time: "screen", work_stress: "work", metric: "metric",
+      task: "task", note: "note", other: "note" })[kind] || "note";
+  }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+  // ---- seed / state ----
+  var CATS = [
+    { k: "sleep", nm: "Sleep", cls: "c-sleep", ask: "How many hours did you sleep?", unit: "h" },
+    { k: "water", nm: "Water", cls: "c-water", step: true, unit: " glasses" },
+    { k: "move",  nm: "Move",  cls: "c-move",  ask: "Minutes of movement / exercise?", unit: " min" },
+    { k: "mood",  nm: "Mood",  cls: "c-mood",  mood: true },
+    { k: "food",  nm: "Food",  cls: "c-food",  ask: "What did you eat?" }
+  ];
+  var STARTER_HABITS = [
+    { nm: "Read 20 min", streak: 0, done: false },
+    { nm: "No added sugar", streak: 0, done: false },
+    { nm: "10k steps", streak: 0, done: false },
+    { nm: "Meditate", streak: 0, done: false }
+  ];
+  var STARTER_GOALS = [
+    { nm: "Sleep 7h average", pct: 0, meta: "Just getting started" },
+    { nm: "Move most days", pct: 0, meta: "Just getting started" },
+    { nm: "Journal daily", pct: 0, meta: "Just getting started" }
+  ];
+  function clone(x) { return JSON.parse(JSON.stringify(x)); }
+  var DEFAULT = {
+    theme: null,
+    logs: [],
+    chat: [],
+    plans: [],          // day-level intentions ({date, hour, text})
+    weeklyPlans: [],     // week-level intentions ({week, text})
+    today: {},
+    habits: clone(STARTER_HABITS),
+    goals: clone(STARTER_GOALS), // shown as monthly goals in the Plan → Month view
+    healthLogs: []       // server-owned (Apple Health ingest); client renders read-only
+  };
+  var KEY = "daybloom_v1";
+  // Fill in any missing top-level keys so older/partial saved states never crash
+  // a renderer (e.g. a blob saved before weeklyPlans/healthLogs existed).
+  function normalize(s) {
+    s = s || {};
+    if (!s.today || typeof s.today !== "object") s.today = {};
+    ["logs", "chat", "plans", "weeklyPlans", "healthLogs"].forEach(function (k) { if (!Array.isArray(s[k])) s[k] = []; });
+    if (!Array.isArray(s.habits)) s.habits = clone(STARTER_HABITS);
+    if (!Array.isArray(s.goals)) s.goals = clone(STARTER_GOALS);
+    if (s.theme === undefined) s.theme = null;
+    return s;
+  }
+  var S;
+  try { S = normalize(JSON.parse(localStorage.getItem(KEY))) || DEFAULT; } catch (e) { S = clone(DEFAULT); }
+  // Offline-first: every change writes to this device instantly, then syncs to
+  // the server in the background. Standalone (no server) falls back to localStorage.
+  var syncT;
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+    clearTimeout(syncT);
+    syncT = setTimeout(pushState, 600);
+  }
+  function pushState() {
+    fetch("/api/state", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ state: S }) }).catch(function () {});
+  }
+
+  // ---- theme ----
+  function applyTheme() { if (S.theme) document.documentElement.setAttribute("data-theme", S.theme); else document.documentElement.removeAttribute("data-theme"); }
+  applyTheme();
+  $("#theme").addEventListener("click", function () {
+    var cur = S.theme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    S.theme = cur === "dark" ? "light" : "dark"; applyTheme(); save();
+  });
+
+  // ---- toast ----
+  var toastT;
+  function toast(msg) {
+    var el = $("#toast"); el.textContent = msg; el.classList.add("show");
+    clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove("show"); }, 1900);
+  }
+
+  // ---- render: quick buttons ----
+  function catIcon(k) { return ICON[k]; }
+  function renderQuick() {
+    var g = $("#qgrid"); g.innerHTML = "";
+    CATS.forEach(function (c) {
+      var v = S.today[c.k];
+      var b = document.createElement("button");
+      b.className = "qbtn" + (v ? " logged" : "");
+      b.innerHTML = '<span class="ic ' + c.cls + '">' + catIcon(c.k) + '</span>' +
+                    '<span class="nm">' + c.nm + '</span>' +
+                    '<span class="vl">' + (v ? (c.k === "water" ? v + "×" : c.k === "mood" ? v : v) : "") + '</span>';
+      b.addEventListener("click", function () { quickLog(c); });
+      g.appendChild(b);
+    });
+  }
+  function nowStr() {
+    var d = new Date();
+    var h = d.getHours(), m = d.getMinutes(), ap = h >= 12 ? "p" : "a";
+    h = h % 12; if (h === 0) h = 12;
+    return h + ":" + (m < 10 ? "0" + m : m) + ap;
+  }
+  function dateKey(d) { d = d || new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function quickLog(c) {
+    if (c.mood) {
+      var faces = ["😔","😐","🙂","😊","🤩"];
+      var cur = faces.indexOf(S.today.mood); var nx = faces[(cur + 1) % faces.length];
+      S.today.mood = nx; addLog(c.k, "Mood " + nx, { bucket: "Health" }); toast("Mood: " + nx);
+    } else if (c.step) {
+      S.today.water = (S.today.water || 0) + 1;
+      addLog(c.k, S.today.water + " glasses of water", { replaceWater: true, bucket: "Health" }); toast("Water +1 (" + S.today.water + ")");
+    } else {
+      var ans = prompt(c.ask, S.today[c.k] || "");
+      if (ans === null || ans.trim() === "") return;
+      var val = ans.trim() + (c.unit && !/[a-z]/i.test(ans) ? c.unit : "");
+      S.today[c.k] = val; addLog(c.k, c.nm + ": " + val, { bucket: "Health" }); toast(c.nm + " logged");
+    }
+    renderQuick(); renderTimeline(); renderInsight(); renderSleep(); renderNutrition(); save();
+  }
+  function addLog(cat, val, opts) {
+    opts = opts || {};
+    if (opts.replaceWater) { S.logs = S.logs.filter(function (l) { return l.cat !== "water"; }); }
+    S.logs.unshift({ id: uid(), cat: cat, val: val, t: nowStr(), ts: Date.now(), date: dateKey(), bucket: opts.bucket || "Health", raw: opts.raw || null, image: opts.image || null, metric: opts.metric || null, num: (opts.num != null && isFinite(opts.num)) ? opts.num : null, nutrition: opts.nutrition || null });
+  }
+
+  // ---- render: timeline ----
+  function renderTimeline() {
+    var ul = $("#timeline"); if (!ul) return; ul.innerHTML = "";
+    if (!S.logs.length) { ul.innerHTML = '<div class="empty">Nothing logged yet today.</div>'; return; }
+    S.logs.forEach(function (l) {
+      var m = KINDMETA[l.cat] || KINDMETA.note;
+      var bucket = (l.bucket && l.bucket !== "Health") ? esc(l.bucket) + " · " : "";
+      var dot = l.image
+        ? '<span class="dot" style="padding:0;overflow:hidden"><img src="' + esc(l.image) + '" alt="" style="width:100%;height:100%;object-fit:cover"></span>'
+        : '<span class="dot ' + m.cls + '">' + ICON[m.ic] + '</span>';
+      var li = document.createElement("li");
+      li.innerHTML = dot + '<span class="txt">' + esc(l.val) + '<span class="t">' + bucket + l.t + '</span></span>';
+      ul.appendChild(li);
+    });
+  }
+
+  // ---- natural-language logging ----
+  // Local fallback parser: turns a sentence into the SAME {items,...} shape Claude
+  // returns, so both paths feed one apply function.
+  function localParse(text) {
+    var t = text.toLowerCase(), items = [], mood = null, m;
+    var legal = /legal|case|court|motion|lawyer|hearing|filing/.test(t);
+    if ((m = t.match(/(\d+(?:\.\d+)?)\s*(?:h|hr|hrs|hour|hours)\b/)) && /sle|slept|sleep|bed|nap/.test(t))
+      items.push({ kind: "sleep", bucket: "Health", label: "Slept " + m[1] + "h", amount: parseFloat(m[1]) });
+    if ((m = t.match(/(\d+)\s*(?:glass|glasses|cup|cups|water)/)))
+      items.push({ kind: "water", bucket: "Health", label: m[1] + " glasses of water", amount: parseInt(m[1], 10) });
+    if ((m = t.match(/(?:weigh|weight)\w*\D{0,6}?(\d{2,3}(?:\.\d)?)\s*(lb|lbs|kg)?/)) || (m = t.match(/\b(\d{2,3}(?:\.\d)?)\s*(lb|lbs|kg)\b/))) {
+      var wu = (m[2] || "lb").replace("lbs", "lb");
+      items.push({ kind: "weight", bucket: "Health", label: m[1] + " " + wu, amount: parseFloat(m[1]), unit: wu });
+    }
+    if (/\bran\b|\brun\b|\bwalk|\bgym\b|workout|yoga|exercise|jog|\d+\s*(?:mi|mile|miles|km)\b/.test(t)) {
+      var mn = t.match(/(\d+)\s*min/);
+      items.push({ kind: "exercise", bucket: "Health", label: mn ? mn[1] + " min movement" : "Movement", amount: mn ? parseInt(mn[1], 10) : null });
+    }
+    if (/\b(ate|eat|eating|breakfast|lunch|dinner|snack|snacked|meal|food|coffee|oats|oatmeal)\b/.test(t)) {
+      var fm = t.match(/(?:ate|had|eating|eat)\s+([^,.;]+)/);
+      items.push({ kind: "food", bucket: "Health", label: fm ? cap(fm[1].trim()) : cap(text), amount: null });
+    }
+    if (/\b(med|meds|medication|pill|pills|wellbutrin|vitamin|vitamins|supplement|dose)\b/.test(t) || /took my/.test(t))
+      items.push({ kind: "meds", bucket: "Health", label: "Meds", amount: null });
+    if (/screen time|on my phone|instagram|tiktok|scrolling|scrolled/.test(t))
+      items.push({ kind: "screen_time", bucket: "Personal", label: "Screen time", amount: null });
+    if (/\b(stress|stressed|overwhelmed|deadline|swamped|burn(?:t|ed) out)\b/.test(t))
+      items.push({ kind: "work_stress", bucket: legal ? "Legal" : "Work", label: "Feeling stressed", amount: null });
+    if (/\b(need to|have to|must|remember to)\b/.test(t)) {
+      var tm = t.match(/(?:need to|have to|must|remember to)\s+([^,.;]+)/);
+      items.push({ kind: "task", bucket: legal ? "Legal" : /work|email|meeting|report/.test(t) ? "Work" : "Personal", label: tm ? cap(tm[1].trim()) : "To-do", amount: null });
+    }
+    if (/tired|great|happy|sad|anxious|calm|good|bad|stressed|energ|wired|exhausted/.test(t))
+      mood = /great|happy|good|calm|energ|amazing/.test(t) ? "😊" : /tired|sad|bad|anxious|stressed|exhausted|wired|overwhelmed/.test(t) ? "😔" : "🙂";
+    if (!items.length && mood == null) items.push({ kind: "note", bucket: "Other", label: cap(text), amount: null });
+    return { summary: "", mood: mood, habits_done: [], items: items };
+  }
+
+  // Apply a parsed result (from Claude or the fallback) into today + the log.
+  // Which numeric metric (if any) an item represents, for charting over time.
+  function metricInfo(it) {
+    var amt = (it.amount != null && isFinite(it.amount)) ? it.amount : null;
+    if (amt == null) return { name: null, num: null };
+    var name = ({ sleep: "Sleep", weight: "Weight", water: "Water", exercise: "Movement", screen_time: "Screen time", work_stress: "Stress" })[it.kind]
+      || (it.kind === "metric" ? (it.metric ? cap(it.metric) : "Metric") : null);
+    return { name: name, num: amt };
+  }
+  function applyItems(text, p, imageUrl) {
+    var n = 0;
+    (p.items || []).forEach(function (it) {
+      var amt = it.amount, label = it.label || cap(text), bucket = it.bucket || "Other", mi = metricInfo(it);
+      if (it.kind === "sleep" && amt != null) S.today.sleep = amt + "h";
+      if (it.kind === "water" && amt != null) { S.today.water = amt; addLog("water", label, { replaceWater: true, bucket: bucket, raw: text, image: imageUrl, metric: "Water", num: amt }); n++; return; }
+      if (it.kind === "exercise") S.today.move = amt != null ? amt + " min" : "logged";
+      if (it.kind === "food") S.today.food = "logged";
+      if (it.kind === "weight" && amt != null) S.today.weight = amt + (it.unit ? " " + it.unit : "");
+      var nut = (it.kind === "food" && it.calories != null) ? { cal: it.calories, p: it.protein_g, c: it.carbs_g, f: it.fat_g } : null;
+      addLog(kindToCat(it.kind), label, { bucket: bucket, raw: text, image: imageUrl, metric: mi.name, num: mi.num, nutrition: nut });
+      n++;
+    });
+    if (p.mood) S.today.mood = p.mood;
+    (p.habits_done || []).forEach(function (nm) {
+      var h = S.habits.filter(function (x) { return x.nm === nm; })[0];
+      if (h && !h.done) { h.done = true; h.streak += 1; }
+    });
+    if (!n && !p.mood && !(p.habits_done || []).length) addLog("note", imageUrl ? "Photo added" : cap(text), { bucket: "Other", raw: text, image: imageUrl });
+    renderQuick(); renderTimeline(); renderHabits(); renderInsight(); renderSleep(); renderNutrition(); save(); refreshInsight();
+  }
+
+  // Claude-powered logging: send to the server, which sorts across your buckets.
+  // No server / no key / no signal → instant local fallback so logging never fails.
+  function submitLog() {
+    var inp = $("#logInput"); var v = inp.value.trim(); if (!v) return;
+    inp.value = "";
+    pushChat({ role: "you", text: v });
+    fetch("/api/parse", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: v, habits: S.habits.map(function (h) { return h.nm; }) })
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (res) {
+        var parsed = (res && res.configured && res.data && res.data.items) ? res.data : localParse(v);
+        applyItems(v, parsed); chatReply(parsed);
+      })
+      .catch(function () { var parsed = localParse(v); applyItems(v, parsed); chatReply(parsed); });
+  }
+
+  // Best-effort: ask Claude for a fresh insight. Silently no-ops without a server/key.
+  var insightT;
+  function refreshInsight() {
+    clearTimeout(insightT);
+    insightT = setTimeout(function () {
+      fetch("/api/insight", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state: {
+          today: S.today,
+          habits: S.habits.map(function (h) { return { name: h.nm, done: h.done, streak: h.streak }; }),
+          recent_logs: S.logs.slice(0, 12),
+          goals: S.goals,
+          days_logged_this_week: loggedDaysThisWeek()
+        } })
+      })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (res) { if (res && res.configured && res.text) $("#insightText").textContent = res.text; })
+        .catch(function () {});
+    }, 800);
+  }
+  // Photo logging: pick/take a screenshot → downscale → Claude vision reads it.
+  function resizeImage(file, maxDim, quality, cb) {
+    var img = new Image(), url = URL.createObjectURL(file);
+    img.onload = function () {
+      var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      var cw = Math.max(1, Math.round(img.width * scale)), ch = Math.max(1, Math.round(img.height * scale));
+      var c = document.createElement("canvas"); c.width = cw; c.height = ch;
+      c.getContext("2d").drawImage(img, 0, 0, cw, ch);
+      URL.revokeObjectURL(url);
+      try { cb(c.toDataURL("image/jpeg", quality)); } catch (e) { toast("Couldn't read that image"); }
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); toast("Couldn't open that image"); };
+    img.src = url;
+  }
+  function handlePhoto(file) {
+    if (!/^image\//.test(file.type)) { toast("That's not an image"); return; }
+    pushChat({ role: "you", text: "📷 Photo" });
+    toast("Reading photo…");
+    resizeImage(file, 1400, 0.85, function (dataUrl) {
+      fetch("/api/parse-image", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl, habits: S.habits.map(function (h) { return h.nm; }) })
+      })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (res) {
+          if (res && res.configured && res.data && res.data.items) { applyItems("[photo]", res.data, res.image_url); chatReply(res.data); }
+          else if (res && res.image_url) { applyItems("[photo]", { items: [], mood: null, habits_done: [] }, res.image_url); pushChat({ role: "bot", text: "Saved your photo. Reading the numbers off it needs the AI key — that turns on once deployed." }); }
+          else { pushChat({ role: "bot", text: "Hmm, I couldn't read that one — try a clearer shot." }); }
+        })
+        .catch(function () { pushChat({ role: "bot", text: "Upload failed — check your signal." }); });
+    });
+  }
+
+  $("#sendBtn").addEventListener("click", submitLog);
+  $("#logInput").addEventListener("keydown", function (e) { if (e.key === "Enter") submitLog(); });
+  $("#photoBtn").addEventListener("click", function () { $("#photoInput").click(); });
+  $("#photoInput").addEventListener("change", function () { if (this.files && this.files[0]) handlePhoto(this.files[0]); this.value = ""; });
+  $("#clearBtn").addEventListener("click", function () {
+    if (!window.confirm("Clear the sample data and start fresh with your own? This can't be undone.")) return;
+    S = { theme: S.theme || null, logs: [], chat: [], plans: [], weeklyPlans: [], today: {}, habits: clone(STARTER_HABITS), goals: clone(STARTER_GOALS), healthLogs: [] };
+    paintAll(); save(); $(".scroll").scrollTop = 0; toast("Fresh start — it's all yours now 🌱");
+  });
+  $("#habitEdit").addEventListener("click", function () { habitsEdit = !habitsEdit; this.classList.toggle("on", habitsEdit); this.textContent = habitsEdit ? "Done" : "Edit"; renderHabits(); });
+
+  // ---- voice: live streaming transcript (words appear as you speak) ----
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var micBtn = $("#micBtn");
+  if (SR) {
+    var rec = new SR(); rec.lang = "en-US"; rec.interimResults = true; rec.continuous = true;
+    var listening = false, baseText = "";
+    micBtn.addEventListener("click", function () {
+      if (listening) { try { rec.stop(); } catch (e) {} return; }
+      var cur = $("#logInput").value.trim();
+      baseText = cur ? cur + " " : "";
+      try { rec.start(); } catch (e) {}
+    });
+    rec.onstart = function () { listening = true; micBtn.classList.add("live"); $("#logInput").placeholder = "Listening… speak now, tap 🎤 to stop"; };
+    rec.onend = function () { listening = false; micBtn.classList.remove("live"); $("#logInput").placeholder = "or just say what happened…"; $("#logInput").focus(); };
+    rec.onerror = function (e) {
+      listening = false; micBtn.classList.remove("live");
+      if (e && e.error === "not-allowed") toast("Allow microphone access to use voice");
+      else if (e && e.error === "no-speech") toast("Didn't catch that — try again");
+      else toast("Voice hiccup — try again, or use the keyboard 🎤");
+    };
+    rec.onresult = function (e) {
+      var txt = "";
+      for (var i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
+      $("#logInput").value = baseText + txt;               // stream words in live
+    };
+  } else {
+    micBtn.addEventListener("click", function () { toast("Tap the 🎤 on your keyboard — it types as you talk"); $("#logInput").focus(); });
+  }
+
+  // ---- habits ----
+  var habitsEdit = false;
+  function renderHabits() {
+    var list = $("#habitList"); list.innerHTML = "";
+    var done = 0;
+    S.habits.forEach(function (h, i) {
+      if (h.done) done++;
+      var d = document.createElement("div");
+      d.className = "habit" + (h.done ? " done" : "");
+      if (habitsEdit) {
+        d.innerHTML = '<button class="hdel" data-i="' + i + '" aria-label="delete">✕</button><span class="nm hedit" data-i="' + i + '">' + esc(h.nm) + '</span><span class="streak">🔥 ' + h.streak + '</span>';
+      } else {
+        d.innerHTML = '<button class="check" aria-label="toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-11"/></svg></button>' +
+                      '<span class="nm">' + esc(h.nm) + '</span><span class="streak">🔥 ' + h.streak + '</span>';
+        d.querySelector(".check").addEventListener("click", function () {
+          h.done = !h.done; h.streak += h.done ? 1 : -1; if (h.streak < 0) h.streak = 0;
+          renderHabits(); renderInsight(); save(); refreshInsight();
+          if (h.done) toast("Nice — " + h.streak + " day streak!");
+        });
+      }
+      list.appendChild(d);
+    });
+    if (habitsEdit) {
+      var add = document.createElement("button");
+      add.className = "addrow"; add.textContent = "+ Add a habit";
+      add.addEventListener("click", function () { var nm = prompt("New habit"); if (nm && nm.trim()) { S.habits.push({ nm: nm.trim(), streak: 0, done: false }); renderHabits(); save(); } });
+      list.appendChild(add);
+      Array.prototype.forEach.call(list.querySelectorAll(".hdel"), function (b) { b.addEventListener("click", function () { S.habits.splice(+b.dataset.i, 1); renderHabits(); save(); }); });
+      Array.prototype.forEach.call(list.querySelectorAll(".hedit"), function (s) { s.addEventListener("click", function () { var nm = prompt("Rename habit", S.habits[+s.dataset.i].nm); if (nm && nm.trim()) { S.habits[+s.dataset.i].nm = nm.trim(); renderHabits(); save(); } }); });
+    }
+    $("#habitCount").textContent = done + "/" + S.habits.length + " done";
+  }
+
+  // ---- insight (computed from real logged days) ----
+  function loggedDaysThisWeek() {
+    var n = 0;
+    weekDays().forEach(function (d) { if (logsForDate(dateKey(d)).length > 0) n++; });
+    return n;
+  }
+  function renderInsight() {
+    var today = new Date();
+    var days = loggedDaysThisWeek();
+    var doneHabits = S.habits.filter(function (h) { return h.done; }).length;
+    var todayS = daySummary(dateKey());
+    var msg;
+    if (todayS.sleep && parseFloat(todayS.sleep) < 7) {
+      msg = 'You slept <b>' + esc(todayS.sleep) + '</b> today — on under-7h days your afternoon energy tends to dip. Maybe an earlier wind-down tonight?';
+    } else if (days === 0) {
+      msg = "Log your first thing — type it, say it, or snap a photo. I'll start spotting patterns as you go.";
+    } else if (doneHabits >= 2) {
+      msg = "You've checked off <b>" + doneHabits + " habits</b> today and logged <b>" + days + " day" + (days > 1 ? "s" : "") + "</b> this week. That consistency is what builds the data.";
+    } else {
+      msg = "You've logged <b>" + days + " day" + (days > 1 ? "s" : "") + "</b> this week. A few more and I'll show you your first real pattern.";
+    }
+    $("#insightText").innerHTML = msg;
+    // week dots — this calendar week, Sunday first
+    var wd = $("#weekdots"); wd.innerHTML = ""; var todayK = dateKey();
+    var init = ["S", "M", "T", "W", "T", "F", "S"];
+    weekDays().forEach(function (d) {
+      var has = logsForDate(dateKey(d)).length > 0;
+      wd.innerHTML += '<div class="d' + (dateKey(d) === todayK ? " today" : "") + '"><div class="lbl">' + init[d.getDay()] +
+        '</div><div class="pip ' + (has ? "full" : "") + '">' + (has ? "✓" : "") + '</div></div>';
+    });
+  }
+
+  // ---- monthly goals (shown inside Plan → Month) ----
+  var goalsEdit = false;
+  function goalsCardHTML() {
+    return '<div class="card"><h2>Month goals <button class="editbtn' + (goalsEdit ? " on" : "") + '" id="goalEdit">' + (goalsEdit ? "Done" : "Edit") + '</button></h2><div id="goalList"></div></div>';
+  }
+  function renderGoals() {
+    var l = $("#goalList"); if (!l) return; l.innerHTML = "";
+    S.goals.forEach(function (g, i) {
+      var right = goalsEdit ? '<button class="hdel" data-i="' + i + '">✕</button>' : '<span class="pct" data-i="' + i + '">' + g.pct + '%</span>';
+      var el = document.createElement("div"); el.className = "goal";
+      el.innerHTML = '<div class="top"><span class="nm' + (goalsEdit ? " hedit" : "") + '" data-i="' + i + '">' + esc(g.nm) + '</span>' + right + '</div>' +
+        '<div class="bar"><span style="width:' + g.pct + '%"></span></div><div class="meta">' + esc(g.meta || "") + '</div>';
+      l.appendChild(el);
+    });
+    if (goalsEdit) {
+      var add = document.createElement("button");
+      add.className = "addrow"; add.textContent = "+ Add a goal";
+      add.addEventListener("click", function () { var nm = prompt("New goal"); if (nm && nm.trim()) { S.goals.push({ nm: nm.trim(), pct: 0, meta: "Just getting started" }); renderGoals(); save(); } });
+      l.appendChild(add);
+      Array.prototype.forEach.call(l.querySelectorAll(".hdel"), function (b) { b.addEventListener("click", function () { S.goals.splice(+b.dataset.i, 1); renderGoals(); save(); }); });
+      Array.prototype.forEach.call(l.querySelectorAll(".hedit"), function (s) { s.addEventListener("click", function () { var nm = prompt("Rename goal", S.goals[+s.dataset.i].nm); if (nm && nm.trim()) { S.goals[+s.dataset.i].nm = nm.trim(); renderGoals(); save(); } }); });
+    } else {
+      Array.prototype.forEach.call(l.querySelectorAll(".pct"), function (p) { p.addEventListener("click", function () { var g = S.goals[+p.dataset.i]; var v = prompt("Progress for “" + g.nm + "” (0–100%)", g.pct); if (v !== null && isFinite(+v)) { g.pct = Math.max(0, Math.min(100, Math.round(+v))); renderGoals(); save(); } }); });
+    }
+  }
+  // ---- Review: Day / Week / Month ----
+  var reviewView = "day", reviewDate = new Date(), reviewMonth = new Date();
+
+  function logRowHTML(l) {
+    var m = KINDMETA[l.cat] || KINDMETA.note;
+    var bucket = (l.bucket && l.bucket !== "Health") ? esc(l.bucket) + " · " : "";
+    var dot = l.image
+      ? '<span class="dot" style="padding:0;overflow:hidden"><img src="' + esc(l.image) + '" alt="" style="width:100%;height:100%;object-fit:cover"></span>'
+      : '<span class="dot ' + m.cls + '">' + ICON[m.ic] + '</span>';
+    return dot + '<span class="txt">' + esc(l.val) + '<span class="t">' + bucket + l.t + '</span></span>';
+  }
+  // Manual logs + read-only Apple Health logs for a given day.
+  function logsForDate(key) {
+    var a = S.logs.filter(function (l) { return l.date === key; });
+    (S.healthLogs || []).forEach(function (h) { if (h.date === key) a.push(h); });
+    return a;
+  }
+  function daySummary(key) {
+    var ls = logsForDate(key), isToday = key === dateKey();
+    function pick(cat) { return ls.filter(function (l) { return l.cat === cat; })[0]; }
+    var sl = pick("sleep"), wt = pick("weight"), mv = pick("move"), md = pick("mood");
+    return {
+      logs: ls, count: ls.length,
+      sleep: sl ? sl.val : (isToday ? S.today.sleep : null),
+      mood: md ? (md.val.match(/[\u{1F600}-\u{1FAFF}]/u) || [null])[0] : (isToday ? S.today.mood : null),
+      weight: wt ? wt.val : (isToday ? S.today.weight : null),
+      move: mv ? mv.val : (isToday ? S.today.move : null)
+    };
+  }
+  function renderReview() {
+    var seg = $("#reviewSeg");
+    if (seg) Array.prototype.forEach.call(seg.children, function (b) { b.classList.toggle("on", b.dataset.view === reviewView); });
+    var host = $("#reviewBody"); if (!host) return;
+    var body, calCard = '<div id="calCard"></div>';
+    if (reviewView === "day") body = planHTML(reviewDate) + calCard + dayHTML(reviewDate) + reviewCardHTML("day");
+    else if (reviewView === "week") body = weeklyPlanHTML() + weekHTML() + calCard + trendsHTML("week") + reviewCardHTML("week");
+    else body = goalsCardHTML() + monthHTML() + trendsHTML("month") + reviewCardHTML("month");
+    host.innerHTML = body;
+    if (reviewView === "day") {
+      var ap = $("#addPlanBtn"); if (ap) ap.addEventListener("click", function () { addPlan(reviewDate); });
+      Array.prototype.forEach.call(host.querySelectorAll(".planrow .hdel"), function (b) { b.addEventListener("click", function () { S.plans = (S.plans || []).filter(function (p) { return p.id !== b.dataset.id; }); renderReview(); save(); }); });
+      loadCalendar(dateKey(reviewDate), dateKey(reviewDate), "day");
+    }
+    if (reviewView === "week") {
+      wireDayLinks(".wk .row");
+      wireWeeklyPlan();
+      var wd = weekDays();
+      loadCalendar(dateKey(wd[0]), dateKey(wd[6]), "week");
+    }
+    if (reviewView === "month") {
+      wireGoals();
+      wireDayLinks(".cal .cell:not(.empty)");
+      var mp = $("#mPrev"), mn = $("#mNext");
+      if (mp) mp.addEventListener("click", function () { reviewMonth = new Date(reviewMonth.getFullYear(), reviewMonth.getMonth() - 1, 1); renderReview(); });
+      if (mn) mn.addEventListener("click", function () { reviewMonth = new Date(reviewMonth.getFullYear(), reviewMonth.getMonth() + 1, 1); renderReview(); });
+    }
+    var rb = $("#revBtn"); if (rb) rb.addEventListener("click", function () { doReview(reviewView); });
+    // auto-scroll to "now": current hour on Day, today's row on Week
+    setTimeout(function () {
+      var el = reviewView === "day" ? $("#nowRow") : reviewView === "week" ? $("#reviewBody .wk .row.today") : null;
+      if (!el) return;
+      var sc = $(".scroll");
+      if (sc && sc.getBoundingClientRect) {
+        var r = el.getBoundingClientRect(), rc = sc.getBoundingClientRect();
+        sc.scrollTop += (r.top - rc.top) - Math.min(sc.clientHeight * 0.32, 170);
+      } else if (el.scrollIntoView) { try { el.scrollIntoView({ block: "center" }); } catch (e) {} }
+    }, 50);
+  }
+
+  // ---- weekly plans (intentions for the whole week) ----
+  function weekKey() { return dateKey(weekDays()[0]); } // Sunday of current week
+  function weeklyPlanHTML() {
+    var wk = weekKey();
+    var plans = (S.weeklyPlans || []).filter(function (p) { return p.week === wk; });
+    var rows = plans.length ? plans.map(function (p) {
+      return '<div class="planrow"><span class="ptext">' + esc(p.text) + '</span><button class="hdel" data-id="' + esc(p.id) + '">✕</button></div>';
+    }).join("") : '<div class="empty">What do you want this week to be about? Add a focus or two, then see how it went.</div>';
+    return '<div class="card"><h2>This week’s plan</h2>' + rows + '<button class="addrow" id="addWeekPlanBtn">+ Add a weekly focus</button></div>';
+  }
+  function wireWeeklyPlan() {
+    var add = $("#addWeekPlanBtn");
+    if (add) add.addEventListener("click", function () {
+      var t = prompt("What do you want to focus on this week?"); if (!t || !t.trim()) return;
+      (S.weeklyPlans = S.weeklyPlans || []).push({ id: uid(), week: weekKey(), text: t.trim() });
+      renderReview(); save();
+    });
+    Array.prototype.forEach.call($("#reviewBody").querySelectorAll(".planrow .hdel"), function (b) {
+      b.addEventListener("click", function () { S.weeklyPlans = (S.weeklyPlans || []).filter(function (p) { return p.id !== b.dataset.id; }); renderReview(); save(); });
+    });
+  }
+  function wireGoals() {
+    var ge = $("#goalEdit");
+    if (ge) ge.addEventListener("click", function () { goalsEdit = !goalsEdit; renderReview(); });
+    renderGoals();
+  }
+
+  // ---- Apple Calendar (read-only; fetched from the Mac) ----
+  function eventTimeLabel(e) {
+    if (e.allday) return "all day";
+    var d = new Date(e.start), h = d.getHours(), m = d.getMinutes(), ap = h >= 12 ? "p" : "a";
+    h = h % 12; if (h === 0) h = 12;
+    return h + (m ? ":" + (m < 10 ? "0" + m : m) : "") + ap;
+  }
+  function calendarCardHTML(events, mode) {
+    if (!events || !events.length) return "";
+    var rows = events.map(function (e) {
+      var day = mode === "week" ? '<span class="ptime" style="width:auto;color:var(--ink-soft)">' + DOW[new Date(e.start).getDay()].slice(0, 3) + '</span>' : "";
+      return '<div class="planrow"><span class="ptime">' + esc(eventTimeLabel(e)) + '</span>' + day + '<span class="ptext">' + esc(e.title || "(untitled)") + '</span></div>';
+    }).join("");
+    return '<div class="card"><h2>On your calendar</h2>' + rows + '</div>';
+  }
+  function loadCalendar(from, to, mode) {
+    var host = $("#calCard"); if (!host) return;
+    fetch("/api/calendar?from=" + from + "&to=" + to)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (res) {
+        var el = $("#calCard"); if (!el) return;
+        el.innerHTML = (res && res.events) ? calendarCardHTML(res.events, mode) : "";
+      })
+      .catch(function () {});
+  }
+
+  // ---- trends (sparkline charts) ----
+  function numFrom(v) { var m = String(v).match(/[\d.]+/); return m ? parseFloat(m[0]) : null; }
+  function weekDays() {
+    var d = new Date(), sun = new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay()), a = [];
+    for (var i = 0; i < 7; i++) a.push(new Date(sun.getFullYear(), sun.getMonth(), sun.getDate() + i));
+    return a;
+  }
+  function periodDays(period) {
+    if (period === "day") return [reviewDate];
+    if (period === "week") return weekDays();
+    var t = new Date(), y = reviewMonth.getFullYear(), mo = reviewMonth.getMonth(), arr = [];
+    var last = (y === t.getFullYear() && mo === t.getMonth()) ? t.getDate() : new Date(y, mo + 1, 0).getDate();
+    for (var d = 1; d <= last; d++) arr.push(new Date(y, mo, d));
+    return arr;
+  }
+  function seriesFor(days, cat) {
+    return days.map(function (d) { var e = logsForDate(dateKey(d)).filter(function (l) { return l.cat === cat; })[0]; return e ? numFrom(e.val) : null; });
+  }
+  function sparkBars(vals) {
+    var w = vals.length * 10, h = 36, max = Math.max.apply(null, vals.concat([1]));
+    var bars = vals.map(function (v, i) {
+      var bw = w / vals.length, bh = v > 0 ? Math.max(2, (v / max) * (h - 4)) : 0;
+      return v > 0 ? '<rect x="' + (i * bw + bw * 0.18).toFixed(1) + '" y="' + (h - bh).toFixed(1) + '" width="' + (bw * 0.64).toFixed(1) + '" height="' + bh.toFixed(1) + '" rx="1.5" fill="var(--indigo)"/>' : "";
+    }).join("");
+    return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" style="width:100%;height:44px;display:block">' + bars + '</svg>';
+  }
+  function sparkLine(vals) {
+    var n = vals.length, w = n * 10, h = 36, present = vals.filter(function (v) { return v != null; });
+    if (!present.length) return "";
+    var mn = Math.min.apply(null, present), mx = Math.max.apply(null, present), range = (mx - mn) || 1, bw = w / n, pts = [];
+    vals.forEach(function (v, i) { if (v != null) pts.push([i * bw + bw / 2, h - 3 - ((v - mn) / range) * (h - 8)]); });
+    var line = pts.length > 1 ? '<polyline points="' + pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '" fill="none" stroke="var(--coral)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' : "";
+    var dots = pts.map(function (p, i) { return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (i === pts.length - 1 ? 3 : 2) + '" fill="var(--coral)"/>'; }).join("");
+    return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" style="width:100%;height:44px;display:block">' + line + dots + '</svg>';
+  }
+  function fmtNum(n) { return (Math.round(n * 10) / 10).toString(); }
+  function metricEmoji(name) { return ({ Sleep: "😴", Weight: "⚖️", Water: "💧", Movement: "🏃", Stress: "💼", "Screen time": "📱" })[name] || "📊"; }
+  function metricNamesIn(days) {
+    var set = {};
+    days.forEach(function (d) { logsForDate(dateKey(d)).forEach(function (l) { if (l.metric && l.num != null) set[l.metric] = true; }); });
+    return Object.keys(set).sort(function (a, b) { var o = { Sleep: 0, Weight: 1 }; return (o[a] != null ? o[a] : 9) - (o[b] != null ? o[b] : 9) || a.localeCompare(b); });
+  }
+  function seriesByMetric(days, name) {
+    return days.map(function (d) { var e = logsForDate(dateKey(d)).filter(function (l) { return l.metric === name && l.num != null; })[0]; return e ? e.num : null; });
+  }
+  function trendsHTML(period) {
+    var days = periodDays(period), names = metricNamesIn(days);
+    if (!names.length) return '<div class="card"><h2>Trends</h2><div class="empty">Charts appear here for any number you log — sleep, weight, caffeine, heart rate, screen time — as you build up days.</div></div>';
+    var html = '<div class="card"><h2>Trends</h2>';
+    names.forEach(function (name) {
+      var vals = seriesByMetric(days, name), have = vals.filter(function (v) { return v != null; });
+      if (!have.length) return;
+      var isSleep = name === "Sleep", latest = have[have.length - 1], first = have[0], label;
+      if (isSleep) label = (have.reduce(function (a, b) { return a + b; }, 0) / have.length).toFixed(1) + "h avg";
+      else { var dl = latest - first; label = fmtNum(latest) + (have.length > 1 ? " (" + (dl >= 0 ? "+" : "") + fmtNum(dl) + ")" : ""); }
+      var chart = isSleep ? sparkBars(vals.map(function (v) { return v || 0; })) : sparkLine(vals);
+      html += '<div class="trend"><div class="trendhd"><span>' + metricEmoji(name) + ' ' + esc(name) + '</span><span class="tval">' + esc(label) + '</span></div>' + chart + '</div>';
+    });
+    return html + '</div>';
+  }
+
+  // ---- Claude-written review of the period ----
+  function reviewCardHTML(period) {
+    var word = period === "day" ? "day" : period;
+    return '<div class="card"><h2>Claude’s take</h2><div id="revOut"><button class="revbtn" id="revBtn">✨ Review this ' + word + ' with Claude</button></div></div>';
+  }
+  function doReview(period) {
+    var out = $("#revOut"); if (!out) return;
+    out.innerHTML = '<div class="empty">Reading your ' + (period === "day" ? "day" : period) + '…</div>';
+    var days = periodDays(period);
+    var payload = { period: period, days: days.map(function (d) {
+      var k = dateKey(d), s = daySummary(k);
+      return { date: k, sleep: s.sleep, mood: s.mood, weight: s.weight, move: s.move,
+        planned: (S.plans || []).filter(function (p) { return p.date === k; }).map(function (p) { return { time: p.hour != null ? hourLabel(p.hour) : null, text: p.text }; }),
+        logs: logsForDate(k).map(function (l) { return { cat: l.cat, val: l.val, bucket: l.bucket }; }) };
+    }) };
+    if (period === "week") payload.weekly_plan = (S.weeklyPlans || []).filter(function (p) { return p.week === weekKey(); }).map(function (p) { return p.text; });
+    if (period === "month") payload.monthly_goals = (S.goals || []).map(function (g) { return { goal: g.nm, progress: g.pct + "%" }; });
+    // Include any calendar events already loaded into the current view.
+    var evs = [];
+    Array.prototype.forEach.call($("#reviewBody").querySelectorAll("#calCard .planrow"), function (r) { evs.push(r.textContent.replace(/\s+/g, " ").trim()); });
+    if (evs.length) payload.calendar = evs;
+    fetch("/api/review", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (res) {
+        if (res && res.configured && res.text) out.innerHTML = '<p class="reviewp">' + esc(res.text) + '</p>';
+        else out.innerHTML = '<div class="empty">Log a little more and try again — or check your signal.</div>';
+      })
+      .catch(function () { out.innerHTML = '<div class="empty">Couldn’t reach Claude — check your signal.</div>'; });
+  }
+  // ---- plans (intentions to compare against actuals) ----
+  function planHTML(d) {
+    var key = dateKey(d);
+    var plans = (S.plans || []).filter(function (p) { return p.date === key; }).sort(function (a, b) { return (a.hour == null ? 99 : a.hour) - (b.hour == null ? 99 : b.hour); });
+    var rows = plans.length ? plans.map(function (p) {
+      return '<div class="planrow"><span class="ptime">' + (p.hour != null ? hourLabel(p.hour) : "—") + '</span><span class="ptext">' + esc(p.text) + '</span><button class="hdel" data-id="' + esc(p.id) + '">✕</button></div>';
+    }).join("") : '<div class="empty">Add what you intend to do — then log what actually happens, and Claude compares.</div>';
+    return '<div class="card"><h2>Plan ' + (key === dateKey() ? "for today" : "") + '</h2>' + rows + '<button class="addrow" id="addPlanBtn">+ Add a plan</button></div>';
+  }
+  function addPlan(d) {
+    var t = prompt("What are you planning?  (e.g. “6pm gym”, “deep work”, “at 9am study”)"); if (!t || !t.trim()) return;
+    t = t.trim();
+    var hm = t.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|a|p)\b/i), hour = null;
+    if (hm) {
+      hour = parseInt(hm[1], 10); var mer = hm[3].toLowerCase();
+      if (/p/.test(mer) && hour < 12) hour += 12;
+      if (/a/.test(mer) && hour === 12) hour = 0;
+      t = t.replace(hm[0], "").replace(/\bat\b/i, "").replace(/^[\s:–-]+|[\s:–-]+$/g, "").trim() || t;
+    }
+    (S.plans = S.plans || []).push({ id: uid(), date: dateKey(d), hour: hour, text: t });
+    renderReview(); save();
+  }
+  function hourOf(l) {
+    if (l.ts) return new Date(l.ts).getHours();
+    var m = String(l.t || "").match(/(\d+):(\d+)\s*([ap])/i); if (!m) return 12;
+    var h = parseInt(m[1], 10); if (/p/i.test(m[3]) && h < 12) h += 12; if (/a/i.test(m[3]) && h === 12) h = 0; return h;
+  }
+  function hourLabel(h) { var ap = h >= 12 ? "p" : "a", hh = h % 12; if (hh === 0) hh = 12; return hh + ap; }
+  function dayHTML(d) {
+    var key = dateKey(d), s = daySummary(key), isToday = key === dateKey();
+    var title = (isToday ? "Today · " : "") + DOW[d.getDay()] + ", " + MON[d.getMonth()] + " " + d.getDate();
+    var pills = "";
+    if (s.sleep) pills += '<span class="pill">😴 <b>' + esc(s.sleep) + '</b></span>';
+    if (s.mood) pills += '<span class="pill">Mood <b>' + esc(s.mood) + '</b></span>';
+    if (s.weight) pills += '<span class="pill">⚖️ <b>' + esc(s.weight) + '</b></span>';
+    if (s.move) pills += '<span class="pill">Move <b>' + esc(s.move) + '</b></span>';
+    pills += '<span class="pill"><b>' + s.count + '</b> logged</span>';
+    if (!s.count) return '<div class="card"><h2>' + esc(title) + '</h2><div class="daysum">' + pills + '</div><div class="empty">Nothing logged this day yet.</div></div>';
+    var byHour = {}; s.logs.forEach(function (l) { var h = hourOf(l); (byHour[h] = byHour[h] || []).push(l); });
+    var hrs = Object.keys(byHour).map(Number), nowH = new Date().getHours(), extra = isToday ? [nowH] : [];
+    var startH = Math.min.apply(null, hrs.concat(extra).concat([7])), endH = Math.max.apply(null, hrs.concat(extra).concat([21]));
+    var rows = "";
+    for (var h = startH; h <= endH; h++) {
+      var isNow = isToday && h === nowH;
+      var body = (byHour[h] || []).map(function (l) { return '<ul class="tl"><li>' + logRowHTML(l) + '</li></ul>'; }).join("");
+      rows += '<div class="hrow' + (isNow ? " now" : "") + '"' + (isNow ? ' id="nowRow"' : '') + '><div class="hlabel">' + hourLabel(h) + '</div><div class="hbody">' + body + '</div></div>';
+    }
+    return '<div class="card"><h2>' + esc(title) + '</h2><div class="daysum">' + pills + '</div><div class="agenda">' + rows + '</div></div>';
+  }
+  function weekHTML() {
+    var rows = "", todayK = dateKey();
+    weekDays().forEach(function (d) {
+      var key = dateKey(d), s = daySummary(key);
+      var met = [];
+      if (s.sleep) met.push('😴 <b>' + esc(s.sleep) + '</b>');
+      if (s.mood) met.push('<b>' + esc(s.mood) + '</b>');
+      if (s.weight) met.push('⚖️ <b>' + esc(s.weight) + '</b>');
+      var metHtml = met.length ? met.join("&nbsp;&nbsp;") : (s.count ? "logged" : "—");
+      rows += '<div class="row' + (key === todayK ? " today" : "") + '" data-key="' + key + '">' +
+        '<div class="wd"><div class="d1">' + DOW[d.getDay()].slice(0, 3) + '</div><div class="d2">' + d.getDate() + '</div></div>' +
+        '<div class="met">' + metHtml + '</div>' +
+        (s.count ? '<div class="cnt">' + s.count + '</div>' : '') + '</div>';
+    });
+    return '<div class="card"><h2>This week</h2><div class="wk">' + rows + '</div></div>';
+  }
+  function monthHTML() {
+    var y = reviewMonth.getFullYear(), mo = reviewMonth.getMonth(), now = new Date();
+    var isCur = y === now.getFullYear() && mo === now.getMonth();
+    var first = new Date(y, mo, 1).getDay(), days = new Date(y, mo + 1, 0).getDate();
+    var nav = '<div class="monthnav"><button id="mPrev" aria-label="Previous month">‹</button><span class="mlabel">' + MON[mo] + " " + y + '</span><button id="mNext" aria-label="Next month">›</button></div>';
+    var cells = ["S", "M", "T", "W", "T", "F", "S"].map(function (h) { return '<div class="head">' + h + '</div>'; }).join("");
+    for (var b = 0; b < first; b++) cells += '<div class="cell empty"></div>';
+    for (var day = 1; day <= days; day++) {
+      var key = dateKey(new Date(y, mo, day)), n = logsForDate(key).length, isT = isCur && day === now.getDate();
+      cells += '<div class="cell' + (isT ? " today" : "") + '" data-key="' + key + '">' + day + (n ? '<span class="cdot"></span>' : '') + '</div>';
+    }
+    return '<div class="card">' + nav + '<div class="cal">' + cells + '</div></div>';
+  }
+  function wireDayLinks(sel) {
+    Array.prototype.forEach.call($("#reviewBody").querySelectorAll(sel), function (el) {
+      el.addEventListener("click", function () {
+        var p = el.dataset.key.split("-");
+        reviewDate = new Date(+p[0], +p[1] - 1, +p[2]); reviewView = "day"; renderReview();
+      });
+    });
+  }
+  // ---- Health dashboard (Apple-Health-style summary) ----
+  function last7() { var t = new Date(), a = []; for (var i = 6; i >= 0; i--) a.push(new Date(t.getFullYear(), t.getMonth(), t.getDate() - i)); return a; }
+  function weekAvg(name) { var v = seriesByMetric(last7(), name).filter(function (x) { return x != null; }); return v.length ? v.reduce(function (a, b) { return a + b; }, 0) / v.length : null; }
+  function todayNutrition() {
+    var t = { cal: 0, p: 0, c: 0, f: 0, n: 0 };
+    logsForDate(dateKey()).forEach(function (l) { if (l.nutrition) { t.cal += l.nutrition.cal || 0; t.p += l.nutrition.p || 0; t.c += l.nutrition.c || 0; t.f += l.nutrition.f || 0; t.n++; } });
+    return t;
+  }
+  function macroBar(label, g, color) {
+    var cap = label === "Carbs" ? 300 : 150, pct = Math.min(100, (g / cap) * 100);
+    return '<div class="m"><div class="ml">' + label + " " + Math.round(g) + 'g</div><div class="mbar"><span style="width:' + pct.toFixed(0) + "%;background:" + color + '"></span></div></div>';
+  }
+  function hcard(cls, ic, label, valHTML, sub) {
+    return '<div class="hcard"><div class="hc-top"><span class="hc-ic ' + cls + '">' + ICON[ic] + '</span>' + esc(label) + '</div><div class="hc-val">' + valHTML + '</div>' + (sub ? '<div class="hc-sub">' + sub + '</div>' : '') + '</div>';
+  }
+  function emptyVal() { return '<span class="hc-empty">—</span>'; }
+  // Photo logging is shared with the Today chat card via the one hidden file input.
+  function openPhoto() { var pi = $("#photoInput"); if (pi) pi.click(); }
+
+  // ---- Sleep tab ----
+  function sleepEntries() {
+    return S.logs.concat(S.healthLogs || []).filter(function (l) { return l.cat === "sleep"; })
+      .slice().sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+  }
+  function renderSleep() {
+    var host = $("#sleepBody"); if (!host) return;
+    var days = last7(), vals = seriesByMetric(days, "Sleep");
+    var have = vals.filter(function (x) { return x != null; });
+    var s = daySummary(dateKey());
+    var lastNight = s.sleep || (have.length ? have[have.length - 1] + "h" : null);
+    var avg = have.length ? (have.reduce(function (a, b) { return a + b; }, 0) / have.length) : null;
+    var cards = '<div class="hgrid">' +
+      hcard("c-sleep", "sleep", "Last night", lastNight ? esc(lastNight) : emptyVal(), "Most recent") +
+      hcard("c-sleep", "metric", "7-day avg", avg != null ? (avg.toFixed(1) + '<span class="u">h</span>') : emptyVal(), have.length + " night" + (have.length === 1 ? "" : "s") + " logged") +
+      '</div>';
+    var trend = have.length
+      ? '<div class="card"><h2>This week</h2><div class="trend"><div class="trendhd"><span>😴 Sleep</span><span class="tval">' + (avg != null ? avg.toFixed(1) + "h avg" : "") + '</span></div>' + sparkBars(vals.map(function (v) { return v || 0; })) + '</div></div>'
+      : '<div class="card"><h2>This week</h2><div class="empty">Log a few nights and your sleep trend shows up here.</div></div>';
+    var log = sleepEntries().slice(0, 14);
+    var logHTML = '<div class="card"><h2>Sleep log</h2>' + (log.length
+      ? '<ul class="tl">' + log.map(function (l) {
+          var tag = l.source === "health" ? '<span class="t">Apple Health</span>' : '<span class="t">' + esc(l.t || "") + '</span>';
+          return '<li><span class="dot c-sleep">' + ICON.sleep + '</span><span class="txt">' + esc(l.val) + tag + '</span></li>';
+        }).join("") + '</ul>'
+      : '<div class="empty">Nothing yet. Tap “Log sleep”, say “slept 7 hours”, or send an Apple Health screenshot.</div>') + '</div>';
+    var actions = '<div class="card"><button class="addrow" id="logSleepBtn">＋ Log sleep</button>' +
+      '<button class="addrow" id="sleepPhotoBtn" style="margin-top:8px">📷 Add a screenshot</button></div>';
+    host.innerHTML = cards + trend + logHTML + actions;
+    var ls = $("#logSleepBtn"); if (ls) ls.addEventListener("click", function () { quickLog(CATS[0]); renderSleep(); });
+    var sp = $("#sleepPhotoBtn"); if (sp) sp.addEventListener("click", openPhoto);
+  }
+
+  // ---- Nutrition tab ----
+  function renderNutrition() {
+    var host = $("#nutritionBody"); if (!host) return;
+    var nut = todayNutrition();
+    var nutVal = nut.n ? (Math.round(nut.cal) + '<span class="u">cal</span>') : emptyVal();
+    var macros = nut.n ? '<div class="macro">' + macroBar("Protein", nut.p, "var(--brand)") + macroBar("Carbs", nut.c, "var(--gold)") + macroBar("Fat", nut.f, "var(--coral)") + "</div>" : "";
+    var nutSub = nut.n ? (Math.round(nut.p) + "g protein · " + Math.round(nut.c) + "g carbs · " + Math.round(nut.f) + "g fat · estimated") : "Log a meal and I’ll estimate the nutrition";
+    var top = '<div class="hgrid"><div class="hcard wide"><div class="hc-top"><span class="hc-ic c-food">' + ICON.food + '</span>Today</div><div class="hc-val">' + nutVal + '</div>' + macros + '<div class="hc-sub">' + nutSub + '</div></div>' +
+      hcard("c-water", "water", "Water", S.today.water ? (S.today.water + '<span class="u">glasses</span>') : emptyVal(), "Today") + '</div>';
+    // weekly calorie trend
+    var days = last7(), calVals = days.map(function (d) {
+      var t = 0, any = false;
+      logsForDate(dateKey(d)).forEach(function (l) { if (l.nutrition && l.nutrition.cal) { t += l.nutrition.cal; any = true; } });
+      return any ? Math.round(t) : null;
+    });
+    var haveCal = calVals.filter(function (x) { return x != null; });
+    var trend = haveCal.length
+      ? '<div class="card"><h2>This week</h2><div class="trend"><div class="trendhd"><span>🍽️ Calories</span><span class="tval">' + Math.round(haveCal.reduce(function (a, b) { return a + b; }, 0) / haveCal.length) + ' avg</span></div>' + sparkLine(calVals) + '</div></div>'
+      : "";
+    var foods = logsForDate(dateKey()).filter(function (l) { return l.cat === "food"; });
+    var foodHTML = '<div class="card"><h2>Today’s food</h2>' + (foods.length
+      ? '<ul class="tl">' + foods.map(function (l) {
+          var cal = l.nutrition && l.nutrition.cal ? '<span class="t">' + Math.round(l.nutrition.cal) + ' cal</span>' : '';
+          return '<li><span class="dot c-food">' + ICON.food + '</span><span class="txt">' + esc(l.val) + cal + '</span></li>';
+        }).join("") + '</ul>'
+      : '<div class="empty">Nothing logged yet. Say what you ate and it shows up here with an estimate.</div>') + '</div>';
+    var actions = '<div class="card"><button class="addrow" id="logFoodBtn">＋ Log food</button>' +
+      '<button class="addrow" id="foodPhotoBtn" style="margin-top:8px">📷 Snap a meal</button></div>';
+    host.innerHTML = top + trend + foodHTML + actions;
+    var lf = $("#logFoodBtn"); if (lf) lf.addEventListener("click", function () { quickLog(CATS[4]); renderNutrition(); });
+    var fp = $("#foodPhotoBtn"); if (fp) fp.addEventListener("click", openPhoto);
+  }
+
+  $("#reviewSeg").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    reviewView = b.dataset.view;
+    if (reviewView === "day") reviewDate = new Date();
+    if (reviewView === "month") reviewMonth = new Date();
+    renderReview();
+  });
+
+  // ---- tabs ----
+  $("#nav").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    Array.prototype.forEach.call(this.children, function (c) { c.classList.remove("on"); });
+    b.classList.add("on");
+    Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (t) { t.classList.remove("on"); });
+    $("#tab-" + b.dataset.tab).classList.add("on");
+    $(".scroll").scrollTop = 0;
+    if (b.dataset.tab === "plan") renderReview();       // re-render so it scrolls to "now"
+    if (b.dataset.tab === "sleep") renderSleep();       // refresh latest values
+    if (b.dataset.tab === "nutrition") renderNutrition();
+  });
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  // ---- initial paint ----
+  var DOW = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  var MON = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  function setGreeting() {
+    var d = new Date(), h = d.getHours();
+    var part = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
+    $("#hello").textContent = "Good " + part + ", Aneeta";
+    $("#date").textContent = DOW[d.getDay()] + " · " + MON[d.getMonth()] + " " + d.getDate();
+  }
+  function paintAll() {
+    setGreeting();
+    renderQuick(); renderChat(); renderHabits(); renderInsight();
+    renderReview(); renderSleep(); renderNutrition();
+  }
+  // ---- chat thread (what you said + what Claude did) ----
+  function renderChat() {
+    var host = $("#chatThread"); if (!host) return;
+    var chat = S.chat || [];
+    if (!chat.length) { host.innerHTML = '<div class="empty">Say or type anything above — sleep, food, meds, a task, how you feel. I’ll sort it and reply here.</div>'; return; }
+    host.innerHTML = '<div class="chat">' + chat.slice(-24).map(function (m) {
+      if (m.role === "you") return '<div class="bub you">' + esc(m.text) + '</div>';
+      return '<div class="bub bot">' + esc(m.text) + (m.filed ? '<span class="filed">' + esc(m.filed) + '</span>' : '') + '</div>';
+    }).join("") + '</div>';
+  }
+  function pushChat(m) { (S.chat = S.chat || []).push(m); if (S.chat.length > 60) S.chat = S.chat.slice(-60); renderChat(); save(); }
+  function chatReply(parsed) {
+    var labels = (parsed.items || []).map(function (it) { return it.label; }).filter(Boolean);
+    var text = parsed.summary ? cap(parsed.summary) : (labels.length ? "Got it — logged that." : "Noted.");
+    var filed = "";
+    if (labels.length) {
+      var buckets = {};
+      (parsed.items || []).forEach(function (it) { (buckets[it.bucket || "Health"] = buckets[it.bucket || "Health"] || []).push(it.label); });
+      filed = "Logged: " + labels.join(" · ");
+      var extra = Object.keys(buckets).filter(function (b) { return b !== "Health"; });
+      if (extra.length) filed += "  →  " + extra.join(", ");
+    }
+    if (parsed.mood) text += "  " + parsed.mood;
+    pushChat({ role: "bot", text: text, filed: filed });
+  }
+  // Try the server first; if it's protected and we're not signed in, go to login.
+  // If there's no server (e.g. opened as a standalone page), just use this device.
+  function boot() {
+    fetch("/api/state", { headers: { "Accept": "application/json" } })
+      .then(function (r) {
+        if (r.status === 401) { location.href = "/login"; return null; }
+        if (!r.ok) return null;
+        return r.json();
+      })
+      .then(function (data) {
+        if (data && data.state) {
+          S = normalize(data.state);
+          try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+        }
+        paintAll(); refreshInsight();
+      })
+      .catch(function () { paintAll(); });
+  }
+  boot();
+})();
+</script>
