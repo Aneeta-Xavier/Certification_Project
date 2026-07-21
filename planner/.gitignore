@@ -1,0 +1,7 @@
+node_modules/
+data/
+.env
+*.log
+ops/daybloom.env
+# the repo root ignores lib/ globally; our server modules live there on purpose
+!backend/lib/

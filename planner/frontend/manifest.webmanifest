@@ -1,0 +1,16 @@
+{
+  "name": "Daybloom",
+  "short_name": "Daybloom",
+  "description": "Your day, your health, your plans — logged by just saying what happened.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF8F2",
+  "theme_color": "#2F7A62",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
