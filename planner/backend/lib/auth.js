@@ -3,11 +3,17 @@
 
 const crypto = require("crypto");
 
-const SECRET = process.env.DAYBLOOM_SECRET || "dev-insecure-secret-change-me";
-const PASSCODE = process.env.DAYBLOOM_PASSCODE || "daybloom";
+const DEFAULT_SECRET = "dev-insecure-secret-change-me";
+const DEFAULT_PASSCODE = "daybloom";
+const SECRET = process.env.DAYBLOOM_SECRET || DEFAULT_SECRET;
+const PASSCODE = process.env.DAYBLOOM_PASSCODE || DEFAULT_PASSCODE;
 const INGEST_TOKEN = process.env.DAYBLOOM_INGEST_TOKEN || "";
 const COOKIE = "daybloom_session";
 const SESSION_DAYS = 30;
+
+// True when either secret is still the built-in placeholder — safe on localhost
+// for quick dev, but must never happen on a network-facing address.
+const usingDefaultSecrets = (SECRET === DEFAULT_SECRET) || (PASSCODE === DEFAULT_PASSCODE);
 
 if (!process.env.DAYBLOOM_PASSCODE) {
   console.warn("[daybloom] WARNING: using default passcode 'daybloom'. Set DAYBLOOM_PASSCODE before real use.");
@@ -59,4 +65,4 @@ function checkIngestToken(header) {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
-module.exports = { isAuthed, checkPasscode, loginCookie, logoutCookie, checkIngestToken };
+module.exports = { isAuthed, checkPasscode, loginCookie, logoutCookie, checkIngestToken, usingDefaultSecrets };

@@ -141,3 +141,37 @@ test("daily backup is created on write", async () => {
   const backups = fs.readdirSync(path.join(DATA_DIR, "backups"));
   assert.ok(backups.some((f) => /^state-\d{4}-\d{2}-\d{2}\.json$/.test(f)), "dated backup exists");
 });
+
+test("refuses to start on a network address with default credentials", async () => {
+  const proc = spawn(process.execPath, [path.join(__dirname, "server.js")], {
+    env: Object.assign({}, process.env, {
+      PORT: String(PORT + 1), HOST: "0.0.0.0", DATA_DIR
+      // deliberately NO DAYBLOOM_PASSCODE / DAYBLOOM_SECRET → defaults
+    }),
+    stdio: ["ignore", "ignore", "pipe"]
+  });
+  let stderr = "";
+  proc.stderr.on("data", (c) => { stderr += c; });
+  const code = await new Promise((resolve) => proc.on("exit", resolve));
+  assert.equal(code, 1, "exits non-zero");
+  assert.match(stderr, /REFUSING to start/, "explains why");
+});
+
+test("starts on a network address once a real passcode + secret are set", async () => {
+  const p2 = PORT + 2;
+  const proc = spawn(process.execPath, [path.join(__dirname, "server.js")], {
+    env: Object.assign({}, process.env, {
+      PORT: String(p2), HOST: "0.0.0.0", DATA_DIR,
+      DAYBLOOM_PASSCODE: "real-pass", DAYBLOOM_SECRET: "real-secret"
+    }),
+    stdio: ["ignore", "ignore", "ignore"]
+  });
+  try {
+    let up = false;
+    for (let i = 0; i < 40; i++) {
+      try { await fetch("http://127.0.0.1:" + p2 + "/login"); up = true; break; }
+      catch (e) { await new Promise((r) => setTimeout(r, 100)); }
+    }
+    assert.ok(up, "server came up on 0.0.0.0 with real credentials");
+  } finally { proc.kill("SIGKILL"); }
+});

@@ -172,4 +172,14 @@ const server = http.createServer(async function (req, res) {
   res.writeHead(404); res.end("Not found");
 });
 
+// Fail closed: never expose the app on a network-facing address while still
+// using the built-in default passcode/secret (anyone could log in or forge a
+// session). Loopback-only stays convenient for quick local dev.
+var isLoopback = HOST === "127.0.0.1" || HOST === "::1" || HOST === "localhost";
+if (!isLoopback && auth.usingDefaultSecrets) {
+  console.error("[daybloom] REFUSING to start on " + HOST + " with default credentials.");
+  console.error("[daybloom] Set DAYBLOOM_PASSCODE and DAYBLOOM_SECRET, or bind HOST=127.0.0.1 for local-only use.");
+  process.exit(1);
+}
+
 server.listen(PORT, HOST, function () { console.log("[daybloom] running on http://" + HOST + ":" + PORT); });
